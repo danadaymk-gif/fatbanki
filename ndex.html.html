@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фат Банк - Симулятор банківських операцій</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PWA мета-теги -->
+    <meta name="theme-color" content="#0047ab">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Фат Банк">
+    
+    <link rel="manifest" href="app.webmanifest">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏦</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏦</text></svg>">
+    
+    <style>
+        /* Весь предыдущий CSS код остается без изменений */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #0047ab;
+            --primary-dark: #003580;
+            --secondary: #ff6b00;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .balance {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .nav-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+        }
+
+        .nav-item {
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-item:hover {
+            background: var(--light);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .screen-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
+        }
+
+        .clicker-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .clicker-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary), #ff8c42);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 30px auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(255, 107, 0, 0.3);
+            transition: all 0.2s;
+        }
+
+        .clicker-btn:active {
+            transform: scale(0.95);
+        }
+
+        .clicker-btn i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .notification.success {
+            background: var(--success);
+        }
+
+        .notification.error {
+            background: var(--danger);
+        }
+
+        .notification.info {
+            background: var(--primary);
+        }
+
+        /* АДМИН ПАНЕЛЬ */
+        .admin-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--primary);
+        }
+
+        .user-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .user-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .card-number {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-blocked {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .admin-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e1e5eb;
+        }
+
+        .admin-tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+
+        .admin-tab.active {
+            border-bottom: 3px solid var(--primary);
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .question-item {
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .question-actions {
+            margin-top: 10px;
+        }
+
+        /* Кнопка установки */
+        .install-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 71, 171, 0.3);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            display: none;
+        }
+
+        .install-btn.show {
+            display: flex;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .install-btn {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Кнопка установки PWA -->
+    <button id="installButton" class="install-btn">
+        <i class="fas fa-download"></i> Встановити додаток
+    </button>
+
+    <!-- Экран аутентификации -->
+    <div id="authScreen" class="container">
+        <div class="auth-container" style="max-width: 400px; margin: 50px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="logo" style="justify-content: center; margin-bottom: 30px;">
+                <i class="fas fa-university"></i>
+                <h1>Фат Банк</h1>
+            </div>
+            
+            <div style="display: flex; margin-bottom: 30px;">
+                <button class="auth-tab active" id="loginTab" style="flex: 1; padding: 15px; background: var(--primary); color: white; border: none; cursor: pointer;">Вхід</button>
+                <button class="auth-tab" id="registerTab" style="flex: 1; padding: 15px; background: var(--light); border: none; cursor: pointer;">Реєстрація</button>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Пароль:</label>
+                    <input type="password" id="loginPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px;">Увійти</button>
+            </form>
+            
+            <form id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label for="registerName">Ім'я:</label>
+                    <input type="text" id="registerName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email:</label>
+                    <input type="email" id="registerEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Пароль (мін. 6 символів):</label>
+                    <input type="password" id="registerPassword" class="form-control" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px;">Зареєструватися</button>
+            </form>
+            
+            <!-- Инструкция по установке -->
+            <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem;">
+                <p><strong>Як встановити додаток на телефон:</strong></p>
+                <ol style="margin-left: 20px; margin-top: 10px;">
+                    <li>Натисніть кнопку "Встановити додаток"</li>
+                    <li>Або відкрийте меню браузера (⋮)</li>
+                    <li>Виберіть "Встановити додаток"</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной интерфейс банка -->
+    <div id="bankApp" class="container" style="display: none;">
+        <!-- Шапка -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-university"></i>
+                <h1>Фат Банк</h1>
+            </div>
+            <div class="user-info">
+                <div class="balance">
+                    Баланс: <span id="currentBalance">0</span> ₴
+                </div>
+                <button class="btn btn-primary" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Вийти
+                </button>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <div class="main-content">
+            <!-- Панель навигации -->
+            <nav class="nav-panel">
+                <div class="nav-item active" data-screen="dashboard">
+                    <i class="fas fa-home"></i> Головна
+                </div>
+                <div class="nav-item" data-screen="clicker">
+                    <i class="fas fa-mouse-pointer"></i> Клікер (1₴ за клік)
+                </div>
+                <div class="nav-item" data-screen="loans">
+                    <i class="fas fa-credit-card"></i> Кредити
+                </div>
+                <div class="nav-item" data-screen="transfer">
+                    <i class="fas fa-exchange-alt"></i> Переказ
+                </div>
+                <div class="nav-item" data-screen="support">
+                    <i class="fas fa-headset"></i> Підтримка
+                </div>
+                <div class="nav-item" id="adminNavItem" style="display: none;" data-screen="admin">
+                    <i class="fas fa-user-shield"></i> Адмін-панель
+                </div>
+            </nav>
+
+            <!-- Экраны -->
+            <div class="screens">
+                <!-- Главная панель -->
+                <div id="dashboardScreen" class="screen active">
+                    <h2 class="screen-title">Головна панель</h2>
+                    <div class="card">
+                        <h3>Вітаємо, <span id="userName"></span>!</h3>
+                        <p>Фат Банк - ваш надійний фінансовий партнер.</p>
+                        <div style="margin-top: 15px;">
+                            <p><strong>Номер вашої картки:</strong></p>
+                            <div class="card-number" style="font-size: 1.2rem; padding: 10px; margin-top: 5px;" id="userCardNumber">
+                                Завантаження...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Швидкі дії</h3>
+                        <div style="display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" data-screen="clicker">
+                                <i class="fas fa-mouse-pointer"></i> Заробити кліками
+                            </button>
+                            <button class="btn btn-success" data-screen="loans">
+                                <i class="fas fa-credit-card"></i> Оформити кредит
+                            </button>
+                            <button class="btn btn-primary" data-screen="transfer">
+                                <i class="fas fa-exchange-alt"></i> Зробити переказ
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Ваша фінансова статистика</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 15px;">
+                            <div>
+                                <h4>Поточний баланс</h4>
+                                <p style="font-size: 1.5rem; font-weight: bold; color: var(--primary);" id="dashboardBalance">0 ₴</p>
+                            </div>
+                            <div>
+                                <h4>Активні кредити</h4>
+                                <p style="font-size: 1.5rem; font-weight: bold; color: var(--danger);" id="activeLoansCount">0</p>
+                            </div>
+                            <div>
+                                <h4>Загальний дохід</h4>
+                                <p style="font-size: 1.5rem; font-weight: bold; color: var(--success);" id="totalIncome">0 ₴</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кликер -->
+                <div id="clickerScreen" class="screen">
+                    <h2 class="screen-title">Клікер для заробітку</h2>
+                    <div class="clicker-container">
+                        <p>Клікайте на кнопку нижче, щоб заробляти гроші. Кожен клік = 1 гривня.</p>
+                        <p>Ваш баланс: <strong id="clickerBalance">0</strong> ₴</p>
+                        <p>Кількість кліків: <strong id="clickCount">0</strong></p>
+                        
+                        <button class="clicker-btn" id="clickerButton">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Клікни тут!
+                            <span style="font-size: 0.9rem; margin-top: 5px;">+1 ₴ за клік</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Кредиты -->
+                <div id="loansScreen" class="screen">
+                    <h2 class="screen-title">Кредити</h2>
+                    
+                    <div class="card">
+                        <h3>Оформити новий кредит</h3>
+                        <div class="form-group">
+                            <label for="loanAmount">Сума кредиту (₴):</label>
+                            <input type="number" id="loanAmount" class="form-control" min="100" max="10000" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="loanTerm">Термін (місяців):</label>
+                            <select id="loanTerm" class="form-control">
+                                <option value="3">3 місяці (5%)</option>
+                                <option value="6">6 місяців (10%)</option>
+                                <option value="12">12 місяців (20%)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-success" id="applyLoan">Оформити кредит</button>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Ваші активні кредити</h3>
+                        <div id="activeLoansList">
+                            <p>У вас немає активних кредитів.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Переводы -->
+                <div id="transferScreen" class="screen">
+                    <h2 class="screen-title">Переказ коштів</h2>
+                    
+                    <div class="card">
+                        <h3>Новий переказ</h3>
+                        <div class="form-group">
+                            <label for="recipientCard">Номер картки отримувача:</label>
+                            <input type="text" id="recipientCard" class="form-control" placeholder="0000 0000 0000 0000">
+                        </div>
+                        <div class="form-group">
+                            <label for="transferAmount">Сума (₴):</label>
+                            <input type="number" id="transferAmount" class="form-control" min="1">
+                        </div>
+                        <button class="btn btn-primary" id="sendTransfer">Надіслати переказ</button>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Історія переказів</h3>
+                        <div id="transferHistory">
+                            <p>У вас ще немає переказів.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Поддержка -->
+                <div id="supportScreen" class="screen">
+                    <h2 class="screen-title">Технічна підтримка</h2>
+                    
+                    <div class="card">
+                        <h3>Зв'язатися з підтримкою</h3>
+                        <div class="form-group">
+                            <label for="supportSubject">Тема:</label>
+                            <input type="text" id="supportSubject" class="form-control" placeholder="Наприклад: Проблема з кредитом">
+                        </div>
+                        <div class="form-group">
+                            <label for="supportMessage">Повідомлення:</label>
+                            <textarea id="supportMessage" class="form-control" rows="5" placeholder="Опишіть вашу проблему..."></textarea>
+                        </div>
+                        <button class="btn btn-primary" id="sendSupport">Надіслати запит</button>
+                    </div>
+                </div>
+
+                <!-- Админ-панель -->
+                <div id="adminScreen" class="screen">
+                    <h2 class="screen-title">Адмін-панель</h2>
+                    
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" data-admin-tab="users">Користувачі</button>
+                        <button class="admin-tab" data-admin-tab="support">Підтримка</button>
+                        <button class="admin-tab" data-admin-tab="money">Фінанси</button>
+                    </div>
+                    
+                    <!-- Управление пользователями -->
+                    <div id="adminUsers" class="admin-section active">
+                        <div class="admin-card">
+                            <h3>Управління користувачами</h3>
+                            <div class="user-list" id="adminUsersList">
+                                <p>Завантаження...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Вопросы поддержки -->
+                    <div id="adminSupport" class="admin-section">
+                        <div class="admin-card">
+                            <h3>Запити в підтримку</h3>
+                            <div id="adminSupportList">
+                                <p>Завантаження...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Финансы -->
+                    <div id="adminMoney" class="admin-section">
+                        <div class="admin-card">
+                            <h3>Керування грошима</h3>
+                            <div class="form-group">
+                                <label for="adminUserSelect">Користувач:</label>
+                                <select id="adminUserSelect" class="form-control">
+                                    <option value="">Оберіть користувача...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="adminAmount">Сума (₴):</label>
+                                <input type="number" id="adminAmount" class="form-control" min="1" max="1000000" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Тип операції:</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-success" id="addMoneyBtn">Нарахувати</button>
+                                    <button class="btn btn-danger" id="removeMoneyBtn">Списати</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div id="notification" class="notification" style="display: none;"></div>
+
+    <!-- Модальное окно для админа -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <div id="modalContent"></div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-primary" id="modalConfirm">OK</button>
+                <button class="btn btn-secondary" id="modalCancel">Скасувати</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Создаем файл manifest.json динамически -->
+    <script type="application/json" id="manifestJSON">
+        {
+            "name": "Фат Банк",
+            "short_name": "Фат Банк",
+            "description": "Симулятор банківських операцій",
+            "start_url": "./index.html",
+            "display": "standalone",
+            "background_color": "#0047ab",
+            "theme_color": "#0047ab",
+            "orientation": "portrait",
+            "icons": [
+                {
+                    "src": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/university.svg",
+                    "sizes": "72x72 96x96 128x128 144x144 152x152 192x192 384x384 512x512",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable"
+                }
+            ]
+        }
+    </script>
+
+    <script>
+        // Простой банковский симулятор
+        const BankApp = {
+            currentUser: null,
+            users: JSON.parse(localStorage.getItem('fat_bank_users')) || [],
+            loans: JSON.parse(localStorage.getItem('fat_bank_loans')) || [],
+            transfers: JSON.parse(localStorage.getItem('fat_bank_transfers')) || [],
+            supportRequests: JSON.parse(localStorage.getItem('fat_bank_support')) || [],
+            adminLogs: JSON.parse(localStorage.getItem('fat_bank_admin_logs')) || [],
+            deferredPrompt: null,
+            
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.initPWA();
+                
+                // Проверяем, есть ли активный пользователь
+                const activeUser = localStorage.getItem('fat_bank_active_user');
+                if (activeUser) {
+                    this.currentUser = JSON.parse(activeUser);
+                    this.showBankApp();
+                } else {
+                    this.showAuthScreen();
+                }
+                
+                // Создаем администратора по умолчанию
+                this.createDefaultAdmin();
+                
+                // Показываем инструкцию по установке
+                this.showInstallInstructions();
+            },
+            
+            loadData() {
+                // Загружаем все данные
+                const savedUsers = localStorage.getItem('fat_bank_users');
+                if (savedUsers) this.users = JSON.parse(savedUsers);
+                
+                const savedLoans = localStorage.getItem('fat_bank_loans');
+                if (savedLoans) this.loans = JSON.parse(savedLoans);
+                
+                const savedTransfers = localStorage.getItem('fat_bank_transfers');
+                if (savedTransfers) this.transfers = JSON.parse(savedTransfers);
+                
+                const savedSupport = localStorage.getItem('fat_bank_support');
+                if (savedSupport) this.supportRequests = JSON.parse(savedSupport);
+            },
+            
+            createDefaultAdmin() {
+                if (!this.users.find(u => u.email === 'admin@fatbank.com')) {
+                    const adminCard = this.generateCardNumber();
+                    this.users.push({
+                        id: this.generateId(),
+                        name: 'Адмін',
+                        email: 'admin@fatbank.com',
+                        password: 'admin123',
+                        balance: 1000000,
+                        totalEarned: 1000000,
+                        clicks: 0,
+                        isAdmin: true,
+                        cardNumber: adminCard,
+                        isCardBlocked: false,
+                        joinDate: new Date().toISOString()
+                    });
+                    this.saveUsers();
+                }
+            },
+            
+            generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            },
+            
+            generateCardNumber() {
+                // Генерация номера карты: 16 цифр
+                let card = '';
+                for (let i = 0; i < 16; i++) {
+                    card += Math.floor(Math.random() * 10);
+                    if ((i + 1) % 4 === 0 && i !== 15) card += ' ';
+                }
+                return card;
+            },
+            
+            saveUsers() {
+                localStorage.setItem('fat_bank_users', JSON.stringify(this.users));
+            },
+            
+            saveLoans() {
+                localStorage.setItem('fat_bank_loans', JSON.stringify(this.loans));
+            },
+            
+            saveTransfers() {
+                localStorage.setItem('fat_bank_transfers', JSON.stringify(this.transfers));
+            },
+            
+            saveSupport() {
+                localStorage.setItem('fat_bank_support', JSON.stringify(this.supportRequests));
+            },
+            
+            saveAdminLogs() {
+                localStorage.setItem('fat_bank_admin_logs', JSON.stringify(this.adminLogs));
+            },
+            
+            showAuthScreen() {
+                document.getElementById('authScreen').style.display = 'block';
+                document.getElementById('bankApp').style.display = 'none';
+            },
+            
+            showBankApp() {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('bankApp').style.display = 'block';
+                this.updateUserInfo();
+                this.showScreen('dashboard');
+                
+                // Показываем админ-панель если это админ
+                if (this.currentUser && this.currentUser.isAdmin) {
+                    document.getElementById('adminNavItem').style.display = 'flex';
+                }
+            },
+            
+            updateUserInfo() {
+                if (!this.currentUser) return;
+                
+                document.getElementById('currentBalance').textContent = this.currentUser.balance;
+                document.getElementById('dashboardBalance').textContent = this.currentUser.balance + ' ₴';
+                document.getElementById('userName').textContent = this.currentUser.name;
+                document.getElementById('clickerBalance').textContent = this.currentUser.balance;
+                document.getElementById('clickCount').textContent = this.currentUser.clicks || 0;
+                
+                // Показываем номер карты
+                if (this.currentUser.cardNumber) {
+                    document.getElementById('userCardNumber').textContent = this.currentUser.cardNumber;
+                } else {
+                    // Генерируем карту если ее нет
+                    this.currentUser.cardNumber = this.generateCardNumber();
+                    this.updateUserInStorage();
+                    document.getElementById('userCardNumber').textContent = this.currentUser.cardNumber;
+                }
+                
+                // Обновляем статистику
+                const userLoans = this.loans.filter(loan => loan.userId === this.currentUser.id && !loan.paid);
+                document.getElementById('activeLoansCount').textContent = userLoans.length;
+                document.getElementById('totalIncome').textContent = (this.currentUser.totalEarned || 0) + ' ₴';
+                
+                // Обновляем список кредитов
+                this.updateLoansList();
+                
+                // Обновляем историю переводов
+                this.updateTransferHistory();
+            },
+            
+            showScreen(screenName) {
+                // Скрываем все экраны
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.classList.remove('active');
+                });
+                
+                // Убираем активный класс у всех пунктов меню
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Показываем нужный экран
+                document.getElementById(screenName + 'Screen').classList.add('active');
+                
+                // Активируем пункт меню
+                document.querySelector(`.nav-item[data-screen="${screenName}"]`).classList.add('active');
+                
+                // Если это админ-панель, обновляем ее
+                if (screenName === 'admin' && this.currentUser.isAdmin) {
+                    this.updateAdminPanel();
+                }
+            },
+            
+            showNotification(message, type = 'info') {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type}`;
+                notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            },
+            
+            register(name, email, password) {
+                // Проверяем, существует ли пользователь
+                if (this.users.find(u => u.email === email)) {
+                    this.showNotification('Користувач з таким email вже існує', 'error');
+                    return false;
+                }
+                
+                // Генерируем номер карты
+                const cardNumber = this.generateCardNumber();
+                
+                // Создаем нового пользователя
+                const newUser = {
+                    id: this.generateId(),
+                    name: name,
+                    email: email,
+                    password: password,
+                    balance: 100, // Начальный баланс
+                    totalEarned: 100,
+                    clicks: 0,
+                    isAdmin: false,
+                    cardNumber: cardNumber,
+                    isCardBlocked: false,
+                    joinDate: new Date().toISOString()
+                };
+                
+                this.users.push(newUser);
+                this.saveUsers();
+                
+                // Автоматически входим
+                this.currentUser = newUser;
+                localStorage.setItem('fat_bank_active_user', JSON.stringify(newUser));
+                
+                this.showNotification('Реєстрація пройшла успішно! Вам нараховано 100 ₴ на баланс.', 'success');
+                this.showBankApp();
+                
+                return true;
+            },
+            
+            login(email, password) {
+                const user = this.users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    // Проверяем не заблокирована ли карта
+                    if (user.isCardBlocked) {
+                        this.showNotification('Ваша картка заблокована. Зверніться до підтримки.', 'error');
+                        return false;
+                    }
+                    
+                    this.currentUser = user;
+                    localStorage.setItem('fat_bank_active_user', JSON.stringify(user));
+                    
+                    this.showBankApp();
+                    return true;
+                } else {
+                    this.showNotification('Невірний email або пароль', 'error');
+                    return false;
+                }
+            },
+            
+            logout() {
+                this.currentUser = null;
+                localStorage.removeItem('fat_bank_active_user');
+                this.showAuthScreen();
+            },
+            
+            handleClick() {
+                if (!this.currentUser) return;
+                
+                this.currentUser.balance += 1;
+                this.currentUser.totalEarned = (this.currentUser.totalEarned || 0) + 1;
+                this.currentUser.clicks = (this.currentUser.clicks || 0) + 1;
+                
+                this.updateUserInStorage();
+                this.updateUserInfo();
+            },
+            
+            applyLoan(amount, term) {
+                if (!this.currentUser) return;
+                
+                // Проверяем максимальную сумму кредита
+                const maxLoan = this.currentUser.totalEarned >= 1000 ? 10000 : 1000;
+                if (amount > maxLoan) {
+                    this.showNotification(`Максимальна сума кредиту: ${maxLoan} ₴`, 'error');
+                    return;
+                }
+                
+                // Рассчитываем проценты
+                let interestRate;
+                switch (parseInt(term)) {
+                    case 3: interestRate = 0.05; break;
+                    case 6: interestRate = 0.10; break;
+                    case 12: interestRate = 0.20; break;
+                    default: interestRate = 0.10;
+                }
+                
+                const totalAmount = amount + (amount * interestRate);
+                const monthlyPayment = totalAmount / term;
+                
+                // Создаем кредит
+                const loan = {
+                    id: this.generateId(),
+                    userId: this.currentUser.id,
+                    amount: amount,
+                    term: term,
+                    interestRate: interestRate,
+                    totalAmount: totalAmount,
+                    monthlyPayment: monthlyPayment,
+                    remainingAmount: totalAmount,
+                    paymentsLeft: term,
+                    takenDate: new Date().toISOString(),
+                    paid: false
+                };
+                
+                // Зачисляем деньги на баланс
+                this.currentUser.balance += amount;
+                this.updateUserInStorage();
+                
+                // Сохраняем кредит
+                this.loans.push(loan);
+                this.saveLoans();
+                
+                // Обновляем интерфейс
+                this.updateUserInfo();
+                this.updateLoansList();
+                
+                this.showNotification(`Кредит на суму ${amount} ₴ оформлено`, 'success');
+            },
+            
+            updateLoansList() {
+                if (!this.currentUser) return;
+                
+                const userLoans = this.loans.filter(loan => loan.userId === this.currentUser.id && !loan.paid);
+                const loansList = document.getElementById('activeLoansList');
+                
+                if (userLoans.length === 0) {
+                    loansList.innerHTML = '<p>У вас немає активних кредитів.</p>';
+                    return;
+                }
+                
+                let html = '';
+                userLoans.forEach(loan => {
+                    html += `
+                        <div style="padding: 15px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px;">
+                            <p><strong>Сума:</strong> ${loan.amount} ₴</p>
+                            <p><strong>Термін:</strong> ${loan.term} міс.</p>
+                            <p><strong>Залишилось сплатити:</strong> ${loan.remainingAmount.toFixed(2)} ₴</p>
+                            <p><strong>Щомісячний платіж:</strong> ${loan.monthlyPayment.toFixed(2)} ₴</p>
+                            <button class="btn btn-sm btn-success pay-loan" data-loan-id="${loan.id}" style="margin-top: 10px;">Сплатити місяць</button>
+                        </div>
+                    `;
+                });
+                
+                loansList.innerHTML = html;
+                
+                // Добавляем обработчики для кнопок оплаты
+                document.querySelectorAll('.pay-loan').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const loanId = e.target.getAttribute('data-loan-id');
+                        this.payLoan(loanId);
+                    });
+                });
+            },
+            
+            payLoan(loanId) {
+                const loan = this.loans.find(l => l.id === loanId);
+                if (!loan) return;
+                
+                // Проверяем достаточно ли денег
+                if (this.currentUser.balance < loan.monthlyPayment) {
+                    this.showNotification('Недостатньо коштів для оплати кредиту', 'error');
+                    return;
+                }
+                
+                // Списываем деньги
+                this.currentUser.balance -= loan.monthlyPayment;
+                loan.remainingAmount -= loan.monthlyPayment;
+                loan.paymentsLeft--;
+                
+                // Если кредит погашен
+                if (loan.paymentsLeft <= 0) {
+                    loan.paid = true;
+                    this.showNotification('Ви успішно погасили кредит!', 'success');
+                } else {
+                    this.showNotification(`Оплата кредиту прийнята. Залишилось ${loan.paymentsLeft} платежів`, 'success');
+                }
+                
+                // Сохраняем изменения
+                this.updateUserInStorage();
+                this.saveLoans();
+                this.updateUserInfo();
+            },
+            
+            sendTransfer(recipientCard, amount) {
+                if (!this.currentUser) return;
+                
+                // Проверяем введенные данные
+                if (!recipientCard || !amount) {
+                    this.showNotification('Заповніть всі поля', 'error');
+                    return;
+                }
+                
+                // Очищаем номер карты от пробелов
+                recipientCard = recipientCard.replace(/\s/g, '');
+                
+                // Проверяем получателя
+                const recipient = this.users.find(u => u.cardNumber && u.cardNumber.replace(/\s/g, '') === recipientCard);
+                if (!recipient) {
+                    this.showNotification('Користувача з такою карткою не знайдено', 'error');
+                    return;
+                }
+                
+                // Проверяем не заблокирована ли карта получателя
+                if (recipient.isCardBlocked) {
+                    this.showNotification('Картка отримувача заблокована', 'error');
+                    return;
+                }
+                
+                // Проверяем сумму
+                amount = parseFloat(amount);
+                if (isNaN(amount) || amount <= 0) {
+                    this.showNotification('Введіть коректну суму', 'error');
+                    return;
+                }
+                
+                if (this.currentUser.balance < amount) {
+                    this.showNotification('Недостатньо коштів на балансі', 'error');
+                    return;
+                }
+                
+                // Выполняем перевод
+                this.currentUser.balance -= amount;
+                recipient.balance += amount;
+                
+                // Сохраняем перевод
+                const transfer = {
+                    id: this.generateId(),
+                    fromUserId: this.currentUser.id,
+                    fromUserName: this.currentUser.name,
+                    toUserId: recipient.id,
+                    toUserName: recipient.name,
+                    amount: amount,
+                    date: new Date().toISOString()
+                };
+                
+                this.transfers.push(transfer);
+                this.saveTransfers();
+                
+                // Обновляем данные пользователей
+                this.updateUserInStorage();
+                this.updateUserInStorage(recipient);
+                
+                // Обновляем интерфейс
+                this.updateUserInfo();
+                this.updateTransferHistory();
+                
+                this.showNotification(`Переказ на суму ${amount} ₴ виконано`, 'success');
+                
+                // Очищаем поля формы
+                document.getElementById('recipientCard').value = '';
+                document.getElementById('transferAmount').value = '';
+            },
+            
+            updateTransferHistory() {
+                if (!this.currentUser) return;
+                
+                const userTransfers = this.transfers.filter(t => 
+                    t.fromUserId === this.currentUser.id || t.toUserId === this.currentUser.id
+                );
+                
+                const transferHistory = document.getElementById('transferHistory');
+                
+                if (userTransfers.length === 0) {
+                    transferHistory.innerHTML = '<p>У вас ще немає переказів.</p>';
+                    return;
+                }
+                
+                // Сортируем по дате (новые сверху)
+                userTransfers.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                let html = '';
+                userTransfers.forEach(transfer => {
+                    const isOutgoing = transfer.fromUserId === this.currentUser.id;
+                    const date = new Date(transfer.date).toLocaleDateString('uk-UA');
+                    
+                    html += `
+                        <div style="padding: 10px; border-bottom: 1px solid #eee;">
+                            <p><strong>${date}</strong> - ${isOutgoing ? 'Відправлено' : 'Отримано'}</p>
+                            <p>${isOutgoing ? transfer.toUserName : transfer.fromUserName}</p>
+                            <p style="color: ${isOutgoing ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">
+                                ${isOutgoing ? '-' : '+'}${transfer.amount} ₴
+                            </p>
+                        </div>
+                    `;
+                });
+                
+                transferHistory.innerHTML = html;
+            },
+            
+            sendSupportRequest(subject, message) {
+                if (!this.currentUser) return;
+                
+                if (!subject || !message) {
+                    this.showNotification('Заповніть всі поля', 'error');
+                    return;
+                }
+                
+                const request = {
+                    id: this.generateId(),
+                    userId: this.currentUser.id,
+                    userName: this.currentUser.name,
+                    userEmail: this.currentUser.email,
+                    subject: subject,
+                    message: message,
+                    date: new Date().toISOString(),
+                    status: 'new',
+                    answer: ''
+                };
+                
+                this.supportRequests.push(request);
+                this.saveSupport();
+                
+                // Очищаем форму
+                document.getElementById('supportSubject').value = '';
+                document.getElementById('supportMessage').value = '';
+                
+                this.showNotification('Ваш запит відправлено', 'success');
+            },
+            
+            // АДМИН ПАНЕЛЬ
+            updateAdminPanel() {
+                if (!this.currentUser || !this.currentUser.isAdmin) return;
+                
+                // Обновляем список пользователей
+                this.updateAdminUsersList();
+                
+                // Обновляем вопросы поддержки
+                this.updateAdminSupportList();
+                
+                // Обновляем селектор пользователей для финансовых операций
+                this.updateAdminUserSelect();
+            },
+            
+            updateAdminUsersList() {
+                let html = '';
+                
+                this.users.forEach(user => {
+                    if (user.isAdmin) return; // Не показываем админов в списке
+                    
+                    html += `
+                        <div class="user-item">
+                            <div>
+                                <p><strong>${user.name}</strong> (${user.email})</p>
+                                <p>Картка: <span class="card-number">${user.cardNumber || 'Не назначена'}</span></p>
+                                <p>Баланс: ${user.balance} ₴ | Кліків: ${user.clicks || 0}</p>
+                                <span class="status-badge ${user.isCardBlocked ? 'status-blocked' : 'status-active'}">
+                                    ${user.isCardBlocked ? 'Заблокована' : 'Активна'}
+                                </span>
+                            </div>
+                            <div class="user-actions">
+                                ${user.isCardBlocked ? 
+                                    `<button class="btn btn-sm btn-success unblock-card" data-user-id="${user.id}">
+                                        <i class="fas fa-unlock"></i> Розблокувати
+                                    </button>` :
+                                    `<button class="btn btn-sm btn-danger block-card" data-user-id="${user.id}">
+                                        <i class="fas fa-lock"></i> Заблокувати
+                                    </button>`
+                                }
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                if (html === '') {
+                    html = '<p>Користувачів не знайдено.</p>';
+                }
+                
+                document.getElementById('adminUsersList').innerHTML = html;
+                
+                // Добавляем обработчики для кнопок
+                this.setupAdminUserButtons();
+            },
+            
+            updateAdminSupportList() {
+                const newRequests = this.supportRequests.filter(req => req.status === 'new');
+                let html = '';
+                
+                newRequests.forEach(request => {
+                    html += `
+                        <div class="question-item">
+                            <p><strong>${request.userName}</strong> (${request.userEmail})</p>
+                            <p><strong>Тема:</strong> ${request.subject}</p>
+                            <p>${request.message}</p>
+                            <div class="question-actions">
+                                <textarea id="answer_${request.id}" placeholder="Введіть відповідь..." style="width: 100%; padding: 10px; margin-bottom: 10px;"></textarea>
+                                <button class="btn btn-sm btn-primary answer-question" data-request-id="${request.id}">
+                                    <i class="fas fa-reply"></i> Відповісти
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                if (html === '') {
+                    html = '<p>Нових запитів немає.</p>';
+                }
+                
+                document.getElementById('adminSupportList').innerHTML = html;
+                
+                // Добавляем обработчики для ответов
+                document.querySelectorAll('.answer-question').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const requestId = e.target.getAttribute('data-request-id');
+                        const answer = document.getElementById(`answer_${requestId}`).value;
+                        
+                        if (!answer.trim()) {
+                            this.showNotification('Введіть текст відповіді', 'error');
+                            return;
+                        }
+                        
+                        this.answerSupportRequest(requestId, answer);
+                    });
+                });
+            },
+            
+            updateAdminUserSelect() {
+                const select = document.getElementById('adminUserSelect');
+                let html = '<option value="">Оберіть користувача...</option>';
+                
+                this.users.forEach(user => {
+                    if (!user.isAdmin) {
+                        html += `<option value="${user.id}">${user.name} - ${user.balance} ₴</option>`;
+                    }
+                });
+                
+                select.innerHTML = html;
+            },
+            
+            answerSupportRequest(requestId, answer) {
+                const request = this.supportRequests.find(r => r.id === requestId);
+                if (!request) return false;
+                
+                request.status = 'answered';
+                request.answer = answer;
+                request.answeredBy = this.currentUser.name;
+                request.answerDate = new Date().toISOString();
+                
+                this.saveSupport();
+                
+                this.showNotification('Відповідь надіслана', 'success');
+                this.updateAdminSupportList();
+                
+                return true;
+            },
+            
+            toggleCardBlock(userId, block) {
+                const user = this.users.find(u => u.id === userId);
+                if (!user) return false;
+                
+                user.isCardBlocked = block;
+                this.updateUserInStorage(user);
+                
+                this.showNotification(
+                    `Картка користувача ${user.name} ${block ? 'заблокована' : 'розблокована'}`,
+                    block ? 'error' : 'success'
+                );
+                
+                this.updateAdminUsersList();
+                return true;
+            },
+            
+            addMoneyToUser(userId, amount) {
+                const user = this.users.find(u => u.id === userId);
+                if (!user) {
+                    this.showNotification('Користувача не знайдено', 'error');
+                    return false;
+                }
+                
+                user.balance += amount;
+                this.updateUserInStorage(user);
+                
+                this.showNotification(`Користувачу ${user.name} нараховано ${amount} ₴`, 'success');
+                
+                // Обновляем селектор
+                this.updateAdminUserSelect();
+                return true;
+            },
+            
+            removeMoneyFromUser(userId, amount) {
+                const user = this.users.find(u => u.id === userId);
+                if (!user) {
+                    this.showNotification('Користувача не знайдено', 'error');
+                    return false;
+                }
+                
+                if (user.balance < amount) {
+                    this.showNotification('Недостатньо коштів на рахунку користувача', 'error');
+                    return false;
+                }
+                
+                user.balance -= amount;
+                this.updateUserInStorage(user);
+                
+                this.showNotification(`З рахунку ${user.name} списано ${amount} ₴`, 'success');
+                
+                // Обновляем селектор
+                this.updateAdminUserSelect();
+                return true;
+            },
+            
+            setupAdminUserButtons() {
+                // Блокировка карты
+                document.querySelectorAll('.block-card').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const userId = e.target.closest('.block-card').getAttribute('data-user-id');
+                        const user = this.users.find(u => u.id === userId);
+                        
+                        if (user && confirm(`Заблокувати картку користувача ${user.name}?`)) {
+                            this.toggleCardBlock(userId, true);
+                        }
+                    });
+                });
+                
+                // Разблокировка карты
+                document.querySelectorAll('.unblock-card').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const userId = e.target.closest('.unblock-card').getAttribute('data-user-id');
+                        const user = this.users.find(u => u.id === userId);
+                        
+                        if (user && confirm(`Розблокувати картку користувача ${user.name}?`)) {
+                            this.toggleCardBlock(userId, false);
+                        }
+                    });
+                });
+            },
+            
+            updateUserInStorage(user = null) {
+                const userToUpdate = user || this.currentUser;
+                const index = this.users.findIndex(u => u.id === userToUpdate.id);
+                if (index !== -1) {
+                    this.users[index] = userToUpdate;
+                    this.saveUsers();
+                    
+                    // Обновляем текущего пользователя в localStorage
+                    if (!user) {
+                        localStorage.setItem('fat_bank_active_user', JSON.stringify(userToUpdate));
+                    }
+                }
+            },
+            
+            // PWA функционал
+            initPWA() {
+                // Регистрируем Service Worker
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', () => {
+                        navigator.serviceWorker.register('/sw.js').catch(error => {
+                            console.log('Service Worker registration failed:', error);
+                        });
+                    });
+                }
+                
+                // Создаем манифест динамически
+                this.createManifest();
+                
+                // Обработка установки PWA
+                this.setupPWAInstall();
+            },
+            
+            createManifest() {
+                const manifestData = {
+                    name: "Фат Банк",
+                    short_name: "Фат Банк",
+                    description: "Симулятор банківських операцій",
+                    start_url: window.location.href,
+                    display: "standalone",
+                    background_color: "#0047ab",
+                    theme_color: "#0047ab",
+                    icons: [
+                        {
+                            src: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/university.svg",
+                            sizes: "192x192",
+                            type: "image/svg+xml"
+                        },
+                        {
+                            src: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/university.svg",
+                            sizes: "512x512",
+                            type: "image/svg+xml"
+                        }
+                    ]
+                };
+                
+                const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+                const manifestURL = URL.createObjectURL(manifestBlob);
+                
+                const link = document.createElement('link');
+                link.rel = 'manifest';
+                link.href = manifestURL;
+                document.head.appendChild(link);
+            },
+            
+            setupPWAInstall() {
+                let deferredPrompt;
+                
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    this.showInstallButton();
+                });
+                
+                document.getElementById('installButton').addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            this.showNotification('Додаток встановлено!', 'success');
+                            this.hideInstallButton();
+                        }
+                        deferredPrompt = null;
+                    }
+                });
+                
+                // Проверяем, установлено ли уже приложение
+                if (window.matchMedia('(display-mode: standalone)').matches || 
+                    window.navigator.standalone === true) {
+                    this.hideInstallButton();
+                }
+            },
+            
+            showInstallButton() {
+                const installButton = document.getElementById('installButton');
+                installButton.classList.add('show');
+            },
+            
+            hideInstallButton() {
+                const installButton = document.getElementById('installButton');
+                installButton.classList.remove('show');
+            },
+            
+            showInstallInstructions() {
+                // Проверяем, на мобильном ли устройстве
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile) {
+                    // Показываем инструкцию через 5 секунд
+                    setTimeout(() => {
+                        this.showNotification('Для встановлення додатку відкрийте меню браузера та виберіть "Встановити додаток"', 'info');
+                    }, 5000);
+                }
+            },
+            
+            setupEventListeners() {
+                // Аутентификация
+                document.getElementById('loginTab').addEventListener('click', () => {
+                    document.getElementById('loginTab').style.background = 'var(--primary)';
+                    document.getElementById('loginTab').style.color = 'white';
+                    document.getElementById('registerTab').style.background = 'var(--light)';
+                    document.getElementById('registerTab').style.color = 'black';
+                    document.getElementById('loginForm').style.display = 'block';
+                    document.getElementById('registerForm').style.display = 'none';
+                });
+                
+                document.getElementById('registerTab').addEventListener('click', () => {
+                    document.getElementById('registerTab').style.background = 'var(--primary)';
+                    document.getElementById('registerTab').style.color = 'white';
+                    document.getElementById('loginTab').style.background = 'var(--light)';
+                    document.getElementById('loginTab').style.color = 'black';
+                    document.getElementById('registerForm').style.display = 'block';
+                    document.getElementById('loginForm').style.display = 'none';
+                });
+                
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPassword').value;
+                    this.login(email, password);
+                });
+                
+                document.getElementById('registerForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('registerName').value;
+                    const email = document.getElementById('registerEmail').value;
+                    const password = document.getElementById('registerPassword').value;
+                    
+                    if (password.length < 6) {
+                        this.showNotification('Пароль повинен містити мінімум 6 символів', 'error');
+                        return;
+                    }
+                    
+                    this.register(name, email, password);
+                });
+                
+                // Выход
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.logout();
+                });
+                
+                // Навигация
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const screen = item.getAttribute('data-screen');
+                        this.showScreen(screen);
+                    });
+                });
+                
+                // Быстрые действия на главной
+                document.querySelectorAll('button[data-screen]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const screen = btn.getAttribute('data-screen');
+                        this.showScreen(screen);
+                    });
+                });
+                
+                // Кликер
+                document.getElementById('clickerButton').addEventListener('click', () => {
+                    this.handleClick();
+                });
+                
+                // Кредиты
+                document.getElementById('applyLoan').addEventListener('click', () => {
+                    const amount = parseFloat(document.getElementById('loanAmount').value);
+                    const term = document.getElementById('loanTerm').value;
+                    
+                    if (isNaN(amount) || amount < 100) {
+                        this.showNotification('Мінімальна сума кредиту - 100 ₴', 'error');
+                        return;
+                    }
+                    
+                    this.applyLoan(amount, term);
+                });
+                
+                // Переводы
+                document.getElementById('sendTransfer').addEventListener('click', () => {
+                    const recipientCard = document.getElementById('recipientCard').value;
+                    const amount = document.getElementById('transferAmount').value;
+                    this.sendTransfer(recipientCard, amount);
+                });
+                
+                // Поддержка
+                document.getElementById('sendSupport').addEventListener('click', () => {
+                    const subject = document.getElementById('supportSubject').value;
+                    const message = document.getElementById('supportMessage').value;
+                    this.sendSupportRequest(subject, message);
+                });
+                
+                // Админ-панель табы
+                document.querySelectorAll('.admin-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabName = tab.getAttribute('data-admin-tab');
+                        
+                        // Скрываем все секции
+                        document.querySelectorAll('.admin-section').forEach(section => {
+                            section.classList.remove('active');
+                        });
+                        
+                        // Убираем активный класс у всех табов
+                        document.querySelectorAll('.admin-tab').forEach(t => {
+                            t.classList.remove('active');
+                        });
+                        
+                        // Показываем нужную секцию
+                        document.getElementById(`admin${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`).classList.add('active');
+                        tab.classList.add('active');
+                    });
+                });
+                
+                // Админ финансовые операции
+                document.getElementById('addMoneyBtn').addEventListener('click', () => {
+                    const userId = document.getElementById('adminUserSelect').value;
+                    const amount = parseFloat(document.getElementById('adminAmount').value);
+                    
+                    if (!userId) {
+                        this.showNotification('Оберіть користувача', 'error');
+                        return;
+                    }
+                    
+                    if (isNaN(amount) || amount <= 0) {
+                        this.showNotification('Введіть коректну суму', 'error');
+                        return;
+                    }
+                    
+                    this.addMoneyToUser(userId, amount);
+                });
+                
+                document.getElementById('removeMoneyBtn').addEventListener('click', () => {
+                    const userId = document.getElementById('adminUserSelect').value;
+                    const amount = parseFloat(document.getElementById('adminAmount').value);
+                    
+                    if (!userId) {
+                        this.showNotification('Оберіть користувача', 'error');
+                        return;
+                    }
+                    
+                    if (isNaN(amount) || amount <= 0) {
+                        this.showNotification('Введіть коректну суму', 'error');
+                        return;
+                    }
+                    
+                    this.removeMoneyFromUser(userId, amount);
+                });
+            }
+        };
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', () => {
+            BankApp.init();
+        });
+    </script>
+</body>
+</html>
